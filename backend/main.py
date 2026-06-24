@@ -18,11 +18,6 @@ from pydantic import BaseModel, Field
 BASE_DIR = Path(__file__).resolve().parent
 ENV_PATH = BASE_DIR / ".env"
 load_dotenv(dotenv_path=ENV_PATH, override=True)
-alpha_key = os.getenv("ALPHA_VANTAGE_API_KEY", "").strip()
-print(f"ENV PATH LOADED: {ENV_PATH}")
-print(f"ENV FILE EXISTS: {ENV_PATH.exists()}")
-print(f"ALPHA_VANTAGE_API_KEY detected: {'yes' if alpha_key else 'no'}")
-print(f"ALPHA_VANTAGE_API_KEY prefix: {alpha_key[:4] if alpha_key else ''}")
 
 from analysis_service import AnalysisServiceError, analyze_stock
 from backtest_service import BacktestServiceError, run_backtest

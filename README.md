@@ -111,3 +111,16 @@ ENVIRONMENT=development
 - This project is designed to run locally in VS Code.
 - No Colab setup is required.
 - Keep generated ML artifacts out of Git unless they are intentionally versioned.
+
+## Validation
+
+Before committing, run the core checks from the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe -m py_compile backend\main.py backend\analysis_service.py backend\backtest_service.py backend\news_service.py backend\prediction_service.py backend\sentiment_service.py backend\app\main.py backend\app\schemas.py backend\app\services.py ml\features.py ml\model.py ml\news_fetcher.py ml\predict.py ml\sentiment.py ml\train.py ml\utils.py
+cd frontend
+npm run lint
+npm run build
+```
+
+Use deterministic backend smoke checks for investment-plan validation, Analyze Stock, and search resolution when external market APIs are unavailable or should not be called.

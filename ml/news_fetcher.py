@@ -29,8 +29,6 @@ def _load_env() -> None:
 
     load_dotenv(ROOT_ENV_PATH)
     load_dotenv(dotenv_path=BACKEND_ENV_PATH, override=True)
-    print(f"ENV PATH LOADED: {BACKEND_ENV_PATH}")
-    print(f"ENV FILE EXISTS: {BACKEND_ENV_PATH.exists()}")
 
 
 _load_env()
