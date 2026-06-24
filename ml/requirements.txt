@@ -1,0 +1,13 @@
+--extra-index-url https://download.pytorch.org/whl/cu126
+
+numpy>=1.26,<3
+pandas>=2.2,<3
+scikit-learn>=1.5,<2
+torch>=2.7,<3
+torchvision>=0.22,<1
+torchaudio>=2.7,<3
+transformers>=4.45,<5
+accelerate>=0.34,<2
+python-dotenv>=1.0,<2
+yfinance>=0.2.40,<1
+ta>=0.11,<1
