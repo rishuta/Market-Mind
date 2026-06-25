@@ -397,38 +397,46 @@ const allocationPlaceholders = [
 const homePlanPlaceholders = ["Stocks", "SIPs", "Gold", "Cash Buffer"];
 
 // Placeholder public brief content until a live AI Daily Brief endpoint is available.
-const publicDailyBrief =
-  "Markets are not giving a strong signal this morning. Investors are waiting for clearer direction, so patience matters more than speed. Inflation pressure is easing, defensive areas remain steady, and quality opportunities are still selective.";
+const publicDailyBrief = {
+  conclusion: "Patience is likely to matter more than speed today.",
+  mood: "Calm",
+  moodLabel: "Market Mood",
+  reasons: [
+    "Investors are waiting for central bank guidance.",
+    "Inflation pressure continues to ease.",
+    "Defensive sectors remain steady.",
+  ],
+};
 
 const publicWatchItems = [
   {
-    detail: "Policy language may influence how much risk investors are willing to take today.",
-    title: "Central bank commentary",
+    detail: "Rate language could set the tone for risk.",
+    title: "Central bank guidance",
   },
   {
-    detail: "Large-company guidance can show whether earnings strength is broadening or narrowing.",
-    title: "Earnings updates",
+    detail: "Company guidance may show where strength is real.",
+    title: "Earnings quality",
   },
   {
-    detail: "Currency movement can affect international exposure and near-term portfolio comfort.",
-    title: "Currency conditions",
+    detail: "Currency moves can affect global exposure.",
+    title: "Currency moves",
   },
 ];
 
 const publicMarketConditions = [
   {
     label: "Market Mood",
-    note: "Markets look steady while investors wait for clearer signals.",
+    note: "Steady, with investors waiting for direction.",
     value: "Calm",
   },
   {
     label: "Risk Environment",
-    note: "Some caution still makes sense, especially for concentrated bets.",
+    note: "Careful positioning still makes sense.",
     value: "Moderate",
   },
   {
     label: "Opportunity Level",
-    note: "Quality opportunities exist, but selectivity matters more than speed.",
+    note: "Quality matters more than speed.",
     value: "Selective",
   },
 ];
@@ -818,7 +826,7 @@ function PublicHomePage({
           <h1 id="public-hero-title">Good morning.</h1>
           <h2>Here&apos;s today&apos;s market story.</h2>
           <p className="subtitle">
-            A calm briefing on what is happening, why it matters, and what deserves your attention.
+            A quick read on what matters before you make a money decision.
           </p>
         </div>
 
@@ -833,12 +841,23 @@ function PublicHomePage({
       </section>
 
       <section className="daily-brief-section calm-reveal" aria-labelledby="brief-title">
-        <p className="eyebrow">Prepared by MarketMind</p>
+        <p className="eyebrow">Prepared today</p>
         <h2 id="brief-title">Today&apos;s Brief</h2>
-        <p className="brief-status">
-          MarketMind reviewed overnight markets, economic events, and sector movement.
-        </p>
-        <p>{publicDailyBrief}</p>
+        <div className="brief-scan">
+          <div className="brief-mood">
+            <span>{publicDailyBrief.moodLabel}</span>
+            <strong>{publicDailyBrief.mood}</strong>
+          </div>
+          <p className="brief-conclusion">{publicDailyBrief.conclusion}</p>
+          <div className="brief-reasons" aria-label="Why MarketMind sees it this way">
+            <span>Why</span>
+            <ul>
+              {publicDailyBrief.reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </section>
 
       <section className="watch-section calm-reveal" aria-labelledby="watch-title">
