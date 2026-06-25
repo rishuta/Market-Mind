@@ -844,7 +844,7 @@ function PublicHomePage({
       <section className="watch-section calm-reveal" aria-labelledby="watch-title">
         <div className="section-intro">
           <p className="eyebrow">Things Worth Watching Today</p>
-          <h2 id="watch-title">Signals that may shape the day</h2>
+          <h2 id="watch-title">Watch Today</h2>
         </div>
         <div className="watch-list-simple">
           {publicWatchItems.map((item) => (
@@ -859,7 +859,7 @@ function PublicHomePage({
       <section className="conditions-section calm-reveal" aria-labelledby="conditions-title">
         <div className="section-intro">
           <p className="eyebrow">Today&apos;s Market Conditions</p>
-          <h2 id="conditions-title">Simple read of the environment</h2>
+          <h2 id="conditions-title">Market Conditions</h2>
         </div>
         <div className="condition-strip">
           {publicMarketConditions.map((item) => (
@@ -873,9 +873,9 @@ function PublicHomePage({
       </section>
 
       <section className="next-step-section calm-reveal" aria-label="Next step">
-        <p>If you are ready to decide how much to invest, MarketMind can build a personal plan next.</p>
+        <p>Ready for personal advice?</p>
         <button className="text-cta" type="button" onClick={onBuildPlan}>
-          Build your personal plan in Invest
+          Build your plan in Invest
         </button>
       </section>
     </main>
