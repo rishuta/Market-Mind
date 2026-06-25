@@ -4662,34 +4662,6 @@ function recommendationExplanation(recommendation: Recommendation) {
   return "The AI currently sees more downside risk than upside opportunity.";
 }
 
-function getSuggestedAction(recommendation?: Recommendation) {
-  if (recommendation === "BUY") {
-    return "Consider a small position.";
-  }
-
-  if (recommendation === "HOLD") {
-    return "Wait for stronger signals.";
-  }
-
-  if (recommendation === "AVOID") {
-    return "Avoid for now.";
-  }
-
-  return "Review the available data first.";
-}
-
-function getMainActionLabel(recommendation: Recommendation) {
-  if (recommendation === "BUY") {
-    return "Review Investment Plan";
-  }
-
-  if (recommendation === "HOLD") {
-    return "Wait and Watch";
-  }
-
-  return "Avoid for Now";
-}
-
 function beginnerRecommendationExplanation(recommendation?: Recommendation) {
   if (recommendation === "BUY") {
     return recommendationExplanation(recommendation);

@@ -214,13 +214,6 @@ def _cache_set(key: str, value: Any) -> Any:
     return value
 
 
-def _market_currency(currency: str) -> dict[str, str]:
-    return {
-        "currency": currency,
-        "locale": "en-IN" if currency == "INR" else "en-US",
-    }
-
-
 def _format_plan_currency(value: float, currency: str) -> str:
     symbols = {"AED": "AED", "EUR": "€", "GBP": "£", "INR": "₹", "USD": "$"}
     rounded = round(value)
@@ -247,14 +240,6 @@ def _get_stock_data_cached(symbol: str) -> dict[str, Any]:
     return _cache_set(key, get_stock_data(symbol))
 
 
-def _get_prediction_cached(symbol: str) -> dict[str, Any]:
-    key = f"predict:{symbol.upper()}"
-    cached = _cache_get(key, TTL_PRICE_PREDICTION_SECONDS)
-    if cached is not None:
-        return cached
-    return _cache_set(key, predict_stock_symbol(symbol))
-
-
 def _get_sentiment_cached(symbol: str) -> dict[str, Any] | None:
     key = f"sentiment:{symbol.upper()}"
     cached = _cache_get(key, TTL_SENTIMENT_SECONDS)
@@ -266,14 +251,6 @@ def _get_sentiment_cached(symbol: str) -> dict[str, Any] | None:
         if sentiment is not None:
             return _cache_set(key, sentiment)
     return None
-
-
-def _get_sentiment_deep_cached(symbol: str) -> dict[str, Any]:
-    key = f"sentiment:{symbol.upper()}"
-    cached = _cache_get(key, TTL_SENTIMENT_SECONDS)
-    if cached is not None:
-        return cached
-    return _cache_set(key, get_stock_sentiment(symbol))
 
 
 def _get_analysis_cached(symbol: str) -> dict[str, Any]:
@@ -733,59 +710,6 @@ def _fast_scan_universe(universe: list[dict[str, str]]) -> tuple[list[dict[str, 
             failed_count += 1
             logger.exception("Fast technical scan failed for %s", stock["symbol"])
     return _cache_set(cache_key, (results, failed_count))
-
-
-def _fast_scan_stock(stock: dict[str, str]) -> dict[str, Any]:
-    symbol = stock["symbol"]
-    stock_data = _get_stock_data_cached(symbol)
-    if stock_data.get("error"):
-        raise ValueError(stock_data["error"])
-    prediction = _get_prediction_cached(symbol)
-    sentiment = _get_sentiment_cached(symbol)
-    volatility = _recent_volatility(stock_data)
-    momentum = _recent_momentum(stock_data)
-    recommendation = str(prediction.get("recommendation", "HOLD"))
-    confidence = float(prediction.get("confidence", 50))
-    confidence = confidence * 100 if confidence <= 1 else confidence
-    base_score = confidence
-    base_score += 12 if recommendation == "BUY" else -18 if recommendation == "AVOID" else 0
-    base_score += min(max(momentum * 1.2, -12), 12)
-    base_score += (100 - min(volatility * 8, 100) - 50) * 0.25
-    if sentiment is not None:
-        base_score += (_sentiment_score(sentiment) - 50) * 0.25
-    return {
-        "analysis": {
-            "confidence": confidence,
-            "final_recommendation": recommendation,
-            "risk_level": _risk_level_from_volatility(volatility),
-            "sentiment_analysis": sentiment,
-            "suggested_allocation": "Fast scan",
-            "symbol": symbol,
-            "transformer_prediction": prediction,
-            "explanation": "Fast scan result used for shortlisting.",
-        },
-        "backtest": None,
-        "components": [
-            {"label": "AI outlook", "note": f"{recommendation} signal", "value": round(confidence)},
-            {"label": "Recent momentum", "note": f"{momentum:.2f}% recent momentum", "value": round(max(0, min(100, 50 + momentum * 2)))},
-            {"label": "Volatility fit", "note": f"{volatility:.1f}% recent volatility", "value": round(max(0, min(100, 100 - volatility * 8)))},
-            {"label": "News sentiment", "note": "Cached sentiment" if sentiment else "Sentiment pending", "value": round(_sentiment_score(sentiment))},
-        ],
-        "confidence": confidence,
-        "expectedHold": "3-9 months",
-        "market": stock["market"],
-        "name": stock["name"],
-        "potentialLossRate": 0.1,
-        "potentialProfitRate": 0.08 if recommendation == "HOLD" else 0.15 if recommendation == "BUY" else 0,
-        "profile": None,
-        "riskRewardLabel": "Fast scan",
-        "riskRewardRatio": 1.2 if recommendation != "AVOID" else None,
-        "score": round(max(0, min(100, base_score))),
-        "scoreBand": _opportunity_band(base_score),
-        "stock": stock_data,
-        "symbol": symbol,
-        "why": ["Fast scan shortlisted this setup."],
-    }
 
 
 def _deep_analyze_stock(fast_result: dict[str, Any], horizon: str, currency: str) -> dict[str, Any]:
