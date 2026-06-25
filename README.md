@@ -1,11 +1,16 @@
 # MarketMind AI
 
-MarketMind AI is a local full-stack starter project for market insight experiments. It includes a Next.js frontend, a FastAPI backend, and a small Python ML workspace.
+MarketMind AI is an AI-powered personal finance advisor that helps everyday investors decide what to do with their money today. It includes a Next.js frontend, a FastAPI backend, and a small Python ML workspace.
+
+## Product Direction
+
+MarketMind should behave like a calm financial advisor, not a technical dashboard. New features should make decisions easier, use human language, and follow the product constitution in [docs/product-blueprint.md](docs/product-blueprint.md) and the design language in [docs/02_DESIGN_LANGUAGE.md](docs/02_DESIGN_LANGUAGE.md).
 
 ## Project Structure
 
 ```text
 MarketMind-AI/
+  docs/       Product vision and design principles
   frontend/   Next.js React app
   backend/    FastAPI API service
   ml/         Machine learning scripts and sample model code
