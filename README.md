@@ -4,7 +4,7 @@ MarketMind AI is an AI-powered personal finance advisor that helps everyday inve
 
 ## Product Direction
 
-MarketMind should behave like a calm financial advisor, not a technical dashboard. New features should make decisions easier, use human language, and follow the product constitution in [docs/product-blueprint.md](docs/product-blueprint.md), the design language in [docs/02_DESIGN_LANGUAGE.md](docs/02_DESIGN_LANGUAGE.md), and the UI guidelines in [docs/03_UI_GUIDELINES.md](docs/03_UI_GUIDELINES.md).
+MarketMind should behave like a calm financial advisor, not a technical dashboard. New features should make decisions easier, use human language, and follow the product constitution in [docs/product-blueprint.md](docs/product-blueprint.md), the design language in [docs/02_DESIGN_LANGUAGE.md](docs/02_DESIGN_LANGUAGE.md), the UI guidelines in [docs/03_UI_GUIDELINES.md](docs/03_UI_GUIDELINES.md), and the feature filter in [docs/04_FEATURE_FILTER.md](docs/04_FEATURE_FILTER.md).
 
 ## Project Structure
 
