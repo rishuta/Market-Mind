@@ -824,7 +824,7 @@ function PublicHomePage({
         <div className="public-hero-copy">
           <h1 id="public-hero-title">Good morning.</h1>
           <p className="subtitle">
-            MarketMind prepares a calm read before you make a money decision.
+            Here&apos;s today&apos;s market story before you make a money decision.
           </p>
         </div>
       </section>
@@ -841,6 +841,7 @@ function PublicHomePage({
           </div>
           <div className="brief-message">
             <p className="brief-conclusion">{publicDailyBrief.conclusion}</p>
+            <span className="brief-reasons-label">Why</span>
             <ul className="brief-reasons" aria-label="Why MarketMind sees it this way">
               {publicDailyBrief.reasons.map((reason) => (
                 <li key={reason}>{reason}</li>
