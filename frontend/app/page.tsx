@@ -396,24 +396,41 @@ const allocationPlaceholders = [
 
 const homePlanPlaceholders = ["Stocks", "SIPs", "Gold", "Cash Buffer"];
 
-const publicMarketStats = [
-  { label: "Market regime", value: "Balanced with pockets of caution", note: "Placeholder for future live integration" },
-  { label: "Sentiment", value: "Neutral to constructive", note: "Placeholder for future live integration" },
-  { label: "Volatility", value: "Moderate", note: "Placeholder for future live integration" },
-  { label: "Fear & Greed", value: "Coming soon", note: "Placeholder metric" },
-];
-
-const publicSectorStrength = [
-  { sector: "Technology", view: "Selective strength", rank: "1" },
-  { sector: "Financials", view: "Stable leadership", rank: "2" },
-  { sector: "Healthcare", view: "Defensive support", rank: "3" },
-  { sector: "Consumer", view: "Mixed signals", rank: "4" },
-];
+// Placeholder public brief content until a live AI Daily Brief endpoint is available.
+const publicDailyBrief =
+  "Markets are calm today as investors wait for the next central bank signal. Inflation pressure continues to cool, while healthcare remains resilient and financials show improving momentum. Caution is still sensible, but quality opportunities remain selective.";
 
 const publicWatchItems = [
-  "Inflation update and central bank commentary",
-  "Large-cap earnings and guidance revisions",
-  "Currency moves affecting international exposure",
+  {
+    detail: "Policy language may influence how much risk investors are willing to take today.",
+    title: "Central bank commentary",
+  },
+  {
+    detail: "Large-company guidance can show whether earnings strength is broadening or narrowing.",
+    title: "Earnings updates",
+  },
+  {
+    detail: "Currency movement can affect international exposure and near-term portfolio comfort.",
+    title: "Currency conditions",
+  },
+];
+
+const publicMarketConditions = [
+  {
+    label: "Market Mood",
+    note: "Markets look steady while investors wait for clearer signals.",
+    value: "Calm",
+  },
+  {
+    label: "Risk Environment",
+    note: "Some caution still makes sense, especially for concentrated bets.",
+    value: "Moderate",
+  },
+  {
+    label: "Opportunity Level",
+    note: "Quality opportunities exist, but selectivity matters more than speed.",
+    value: "Selective",
+  },
 ];
 
 const opportunityPlaceholders = [
@@ -795,13 +812,14 @@ function PublicHomePage({
         </button>
       </header>
 
-      <section className="public-hero" aria-labelledby="public-hero-title">
+      <section className="public-hero calm-reveal" aria-labelledby="public-hero-title">
         <div className="public-hero-copy">
-          <p className="eyebrow">AI financial advisor</p>
-          <h1 id="public-hero-title">Know what to do with your money.</h1>
+          <p className="eyebrow">MarketMind AI</p>
+          <h1 id="public-hero-title">Good morning.</h1>
+          <h2>Here&apos;s today&apos;s market story.</h2>
           <p className="subtitle">
-            MarketMind turns market conditions, stock analysis, and investment planning into calm,
-            practical guidance for everyday investors.
+            MarketMind helps everyday investors understand what is happening today, why it matters,
+            and when to build a personal investment plan.
           </p>
           <div className="public-actions">
             <button className="primary-cta" type="button" onClick={onBuildPlan}>
@@ -813,119 +831,51 @@ function PublicHomePage({
           </div>
         </div>
 
-        <aside className="public-advisor-panel" aria-label="MarketMind preview">
-          <span>Today&apos;s advisor note</span>
-          <strong>Hold some cash, stay selective, and avoid chasing crowded trades.</strong>
-          <p>
-            MarketMind starts with the action first, then shows why the recommendation makes sense.
-          </p>
-        </aside>
-      </section>
-
-      <section className="public-section" aria-labelledby="market-title">
-        <div className="public-section-heading">
-          <p className="eyebrow">Today&apos;s Market</p>
-          <h2 id="market-title">A quick read before you act</h2>
-        </div>
-        <div className="public-metric-grid">
-          {publicMarketStats.map((item) => (
-            <article key={item.label} className="public-card">
-              <span>{item.label}</span>
-              <strong>{item.value}</strong>
-              <p>{item.note}</p>
-            </article>
-          ))}
+        <div className="brief-visual" aria-hidden="true">
+          <span className="brief-orbit orbit-one" />
+          <span className="brief-orbit orbit-two" />
+          <span className="brief-core" />
+          <span className="brief-node node-one" />
+          <span className="brief-node node-two" />
+          <span className="brief-node node-three" />
         </div>
       </section>
 
-      <section className="public-section public-brief" aria-labelledby="brief-title">
-        <div>
-          <p className="eyebrow">AI Daily Brief</p>
-          <h2 id="brief-title">MarketMind&apos;s take</h2>
-        </div>
-        <p>
-          Today looks reasonable for selective investing, but not for rushing. Keep enough cash
-          available, favor diversified exposure first, and review direct stocks only when the setup
-          is clearly worth the risk.
-        </p>
-        <small>Placeholder brief for future live AI integration.</small>
-      </section>
-
-      <section className="public-section" aria-labelledby="sector-title">
-        <div className="public-section-heading">
-          <p className="eyebrow">Sector Strength</p>
-          <h2 id="sector-title">Where conditions look healthier</h2>
-        </div>
-        <div className="sector-rank-grid">
-          {publicSectorStrength.map((item) => (
-            <article key={item.sector} className="public-card sector-card">
-              <b>{item.rank}</b>
-              <div>
-                <strong>{item.sector}</strong>
-                <p>{item.view}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="public-section" aria-labelledby="watch-title">
-        <div className="public-section-heading">
-          <p className="eyebrow">Things To Watch</p>
-          <h2 id="watch-title">Signals that could affect the plan</h2>
-        </div>
-        <div className="watch-list">
-          {publicWatchItems.map((item) => (
-            <article key={item} className="public-card">
-              <strong>{item}</strong>
-              <p>Placeholder event for future live economic calendar integration.</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="public-section locked-plan" aria-labelledby="plan-preview-title">
-        <div>
-          <p className="eyebrow">Personalized Plan Preview</p>
-          <h2 id="plan-preview-title">Your plan unlocks after you create an account</h2>
-          <p>
-            MarketMind can show how much to invest, how much cash to keep, what to focus on, and
-            what to avoid based on your risk profile.
-          </p>
-        </div>
-        <div className="locked-preview" aria-label="Locked investment plan preview">
-          {["Invest amount", "Cash to hold", "Focus area", "What to avoid"].map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-        </div>
-        <button className="primary-cta" type="button" onClick={onSignIn}>
-          Create Account To Unlock
+      <section className="daily-brief-section calm-reveal" aria-labelledby="brief-title">
+        <p className="eyebrow">AI Daily Brief</p>
+        <h2 id="brief-title">What matters today</h2>
+        <p>{publicDailyBrief}</p>
+        <button className="text-cta" type="button" onClick={onBuildPlan}>
+          Go to Invest to build your personal plan
         </button>
       </section>
 
-      <section className="public-section" aria-labelledby="why-title">
-        <div className="public-section-heading">
-          <p className="eyebrow">Why MarketMind</p>
-          <h2 id="why-title">Advice before analytics</h2>
+      <section className="watch-section calm-reveal" aria-labelledby="watch-title">
+        <div className="section-intro">
+          <p className="eyebrow">Things Worth Watching Today</p>
+          <h2 id="watch-title">Signals that may shape the day</h2>
         </div>
-        <div className="why-grid">
-          {[
-            {
-              title: "AI Daily Brief",
-              description: "Understand what changed today and what it means for your money.",
-            },
-            {
-              title: "Investment Planning",
-              description: "See how much to invest, what to hold, and where to stay cautious.",
-            },
-            {
-              title: "Stock Analysis",
-              description: "Get a decision-first view before digging into deeper evidence.",
-            },
-          ].map((item) => (
-            <article key={item.title} className="public-card">
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
+        <div className="watch-list-simple">
+          {publicWatchItems.map((item) => (
+            <article key={item.title} className="watch-item">
+              <strong>{item.title}</strong>
+              <p>{item.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="conditions-section calm-reveal" aria-labelledby="conditions-title">
+        <div className="section-intro">
+          <p className="eyebrow">Today&apos;s Market Conditions</p>
+          <h2 id="conditions-title">Simple read of the environment</h2>
+        </div>
+        <div className="condition-strip">
+          {publicMarketConditions.map((item) => (
+            <article key={item.label} className="condition-item">
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+              <p>{item.note}</p>
             </article>
           ))}
         </div>
