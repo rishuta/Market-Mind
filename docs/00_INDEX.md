@@ -8,25 +8,33 @@ MarketMind is not a trading terminal, stock screener, news site, or technical da
 
 ## Documentation Reading Order
 
-1. [Product Blueprint](product-blueprint.md)
+1. [Product Bible](PRODUCT/00_PRODUCT_BIBLE.md)
 
-   Start here. The blueprint defines what MarketMind is, what it is not, and the core product principles that guide every major decision. It is the product constitution.
+   Start here. The Product Bible is the master product memo: why MarketMind exists, how product decisions are made, and which principles must never change.
 
-2. [Design Language](02_DESIGN_LANGUAGE.md)
+2. [Product Blueprint](product-blueprint.md)
 
-   Read this next to understand how MarketMind should feel. It defines the visual philosophy, emotional goals, language style, accessibility principles, and recommendation tone.
+   Read this next. The blueprint defines what MarketMind is, what it is not, and the core product principles that guide every major decision.
 
-3. [UI Guidelines](03_UI_GUIDELINES.md)
+3. [Design Language](02_DESIGN_LANGUAGE.md)
+
+   Read this to understand how MarketMind should feel. It defines the visual philosophy, emotional goals, language style, accessibility principles, and recommendation tone.
+
+4. [UI Guidelines](03_UI_GUIDELINES.md)
 
    This document explains how MarketMind screens should be structured. It defines page responsibilities, decision-first layouts, recommendation card behavior, expandable details, preference UI, and mobile expectations.
 
-4. [Feature Filter](04_FEATURE_FILTER.md)
+5. [Feature Filter](04_FEATURE_FILTER.md)
 
    Use this before building anything new. It explains how to decide whether a feature should be built, simplified, postponed, or rejected.
 
-5. Roadmap
+6. [Product Requirements](05_PRODUCT_REQUIREMENTS.md)
 
-   The current roadmap lives in the Product Blueprint. It keeps near-term work focused on AI Daily Brief, Invest Page redesign, Market Overview, Analyze Stock simplification, Portfolio Intelligence, and UI polish.
+   Use this to understand what the product must do and what quality standards it must meet.
+
+7. [Roadmap](06_ROADMAP.md)
+
+   Use this to understand the strategic evolution from stock analysis to AI financial advisor and future personal financial operating system.
 
 ## How We Build MarketMind
 
@@ -111,7 +119,7 @@ All contributors, including AI coding assistants, should read the documentation 
 
 The expected order is:
 
-> Blueprint -> Design -> UI -> Feature Filter -> Code
+> Product Bible -> Blueprint -> Design -> UI -> Feature Filter -> Requirements -> Roadmap -> Code
 
 Product and design decisions should be made before implementation. Code should follow the smallest clean path that preserves MarketMind's advisor identity.
 

@@ -4,7 +4,7 @@ MarketMind AI is an AI-powered personal finance advisor that helps everyday inve
 
 ## Product Direction
 
-MarketMind should behave like a calm financial advisor, not a technical dashboard. New features should make decisions easier, use human language, and start with the documentation index in [docs/00_INDEX.md](docs/00_INDEX.md), then follow the product constitution in [docs/product-blueprint.md](docs/product-blueprint.md), the design language in [docs/02_DESIGN_LANGUAGE.md](docs/02_DESIGN_LANGUAGE.md), the UI guidelines in [docs/03_UI_GUIDELINES.md](docs/03_UI_GUIDELINES.md), the feature filter in [docs/04_FEATURE_FILTER.md](docs/04_FEATURE_FILTER.md), the product requirements in [docs/05_PRODUCT_REQUIREMENTS.md](docs/05_PRODUCT_REQUIREMENTS.md), and the roadmap in [docs/06_ROADMAP.md](docs/06_ROADMAP.md).
+MarketMind should behave like a calm financial advisor, not a technical dashboard. New features should make decisions easier, use human language, and start with the documentation index in [docs/00_INDEX.md](docs/00_INDEX.md), then follow the Product Bible in [docs/PRODUCT/00_PRODUCT_BIBLE.md](docs/PRODUCT/00_PRODUCT_BIBLE.md), the product blueprint in [docs/product-blueprint.md](docs/product-blueprint.md), the design language in [docs/02_DESIGN_LANGUAGE.md](docs/02_DESIGN_LANGUAGE.md), the UI guidelines in [docs/03_UI_GUIDELINES.md](docs/03_UI_GUIDELINES.md), the feature filter in [docs/04_FEATURE_FILTER.md](docs/04_FEATURE_FILTER.md), the product requirements in [docs/05_PRODUCT_REQUIREMENTS.md](docs/05_PRODUCT_REQUIREMENTS.md), and the roadmap in [docs/06_ROADMAP.md](docs/06_ROADMAP.md).
 
 ## Project Structure
 
