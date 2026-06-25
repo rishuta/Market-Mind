@@ -400,7 +400,7 @@ const homePlanPlaceholders = ["Stocks", "SIPs", "Gold", "Cash Buffer"];
 const publicDailyBrief = {
   conclusion: "Patience is likely to matter more than speed today.",
   mood: "Calm",
-  moodLabel: "Market Mood",
+  moodLabel: "Mood",
   reasons: [
     "Investors are waiting for central bank guidance.",
     "Inflation pressure continues to ease.",
@@ -425,7 +425,7 @@ const publicWatchItems = [
 
 const publicMarketConditions = [
   {
-    label: "Market Mood",
+    label: "Mood",
     note: "Steady, with investors waiting for direction.",
     value: "Calm",
   },
@@ -824,17 +824,8 @@ function PublicHomePage({
         <div className="public-hero-copy">
           <h1 id="public-hero-title">Good morning.</h1>
           <p className="subtitle">
-            Here&apos;s today&apos;s market story before you make a money decision.
+            MarketMind prepares a calm read before you make a money decision.
           </p>
-        </div>
-
-        <div className="brief-visual" aria-hidden="true">
-          <span className="brief-orbit orbit-one" />
-          <span className="brief-orbit orbit-two" />
-          <span className="brief-core" />
-          <span className="brief-node node-one" />
-          <span className="brief-node node-two" />
-          <span className="brief-node node-three" />
         </div>
       </section>
 
