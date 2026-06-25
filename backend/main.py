@@ -1481,7 +1481,118 @@ def _apply_preference_scores(
 def _preference_plan_explanation(summary: list[dict[str, str]]) -> str | None:
     if not summary:
         return None
-    return "MarketMind adjusted the plan for your preferences while keeping risk caps and adaptive market scoring in control."
+    constrained = [item for item in summary if item["status"] not in {"applied"}]
+    applied = [item for item in summary if item["status"] == "applied"]
+    if constrained and applied:
+        return (
+            f"MarketMind applied {', '.join(item['preference'] for item in applied)}, but "
+            f"{'; '.join(item['reason'] for item in constrained)}"
+        )
+    if constrained:
+        return "; ".join(item["reason"] for item in constrained)
+    return "MarketMind applied your preferences while keeping risk caps and adaptive market scoring in control."
+
+
+def _bucket_amounts_from_weights(amount: float, currency: str, weights: dict[str, float]) -> dict[str, float]:
+    amounts: dict[str, float] = {}
+    allocated = 0.0
+    active = [kind for kind in ("index", "stocks", "gold", "cash", "highRisk") if weights.get(kind, 0) > 0]
+    for index, kind in enumerate(active):
+        amount_value = amount - allocated if index == len(active) - 1 else _round_plan_amount(amount * weights[kind], currency)
+        amount_value = max(0, amount_value)
+        allocated += amount_value
+        amounts[kind] = amount_value
+    return amounts
+
+
+def _weights_from_bucket_scores(
+    bucket_scores: dict[str, float],
+    risk_profile: str,
+    horizon: str,
+    regime: dict[str, Any],
+    stock_quality: float,
+    crypto_quality: float,
+) -> tuple[dict[str, float], dict[str, dict[str, float]]]:
+    raw = {key: max(0, score) ** 1.35 for key, score in bucket_scores.items()}
+    weights = _normalize_adaptive_weights(raw, risk_profile, horizon)
+    caps = _bucket_caps(risk_profile, horizon)
+    caps["max"]["gold"] = _gold_cap(regime, bucket_scores, stock_quality)
+    weights = _rebalance_weight_caps(weights, caps)
+    if risk_profile != "safe" and crypto_quality >= 60 and bucket_scores["highRisk"] >= 58:
+        crypto_floor = 0.03 if risk_profile == "balanced" else 0.06
+        if horizon == "short":
+            crypto_floor *= 0.5
+        crypto_cap = caps["max"]["highRisk"]
+        target_crypto = min(crypto_cap, crypto_floor)
+        if target_crypto > weights.get("highRisk", 0):
+            extra = target_crypto - weights.get("highRisk", 0)
+            weights["highRisk"] = target_crypto
+            minimums = caps["min"]
+            reducers = [
+                key for key in ("stocks", "index", "gold", "cash")
+                if weights.get(key, 0) > minimums.get(key, 0)
+            ]
+            reducer_total = sum(weights[key] - minimums.get(key, 0) for key in reducers) or 1
+            for key in reducers:
+                room = weights[key] - minimums.get(key, 0)
+                weights[key] = max(minimums.get(key, 0), weights[key] - extra * (room / reducer_total))
+            total_weight = sum(weights.values()) or 1
+            weights = {key: value / total_weight for key, value in weights.items()}
+    return weights, caps
+
+
+def _finalize_preference_summary(
+    summary: list[dict[str, str]],
+    before: dict[str, float],
+    after: dict[str, float],
+    risk_profile: str,
+) -> list[dict[str, str]]:
+    bucket_by_preference = {
+        "allow_crypto": "highRisk",
+        "avoid_crypto": "highRisk",
+        "avoid_direct_stocks": "stocks",
+        "increase_direct_stocks": "stocks",
+        "increase_gold": "gold",
+        "keep_less_cash": "cash",
+        "keep_more_cash": "cash",
+        "reduce_direct_stocks": "stocks",
+        "reduce_gold": "gold",
+        "sectorAvoid": "stocks",
+    }
+    direction_by_preference = {
+        "allow_crypto": 1,
+        "avoid_crypto": -1,
+        "avoid_direct_stocks": -1,
+        "increase_direct_stocks": 1,
+        "increase_gold": 1,
+        "keep_less_cash": -1,
+        "keep_more_cash": 1,
+        "reduce_direct_stocks": -1,
+        "reduce_gold": -1,
+        "sectorAvoid": -1,
+    }
+    finalized = []
+    for item in summary:
+        preference = item["preference"]
+        bucket = bucket_by_preference.get(preference)
+        direction = direction_by_preference.get(preference)
+        before_amount = before.get(bucket or "", 0)
+        after_amount = after.get(bucket or "", 0)
+        if preference == "allow_crypto" and risk_profile == "safe":
+            finalized.append(_preference_summary_item(preference, "Crypto stayed at 0% because Safe risk plans do not allow crypto exposure.", "blocked_by_risk_rules"))
+        elif preference == "increase_gold" and after_amount <= before_amount:
+            finalized.append(_preference_summary_item(preference, "Gold was not increased because current market conditions already limit gold exposure for your profile.", "blocked_by_market_conditions"))
+        elif direction == 1 and after_amount > before_amount:
+            finalized.append(_preference_summary_item(preference, item["reason"], "applied"))
+        elif direction == -1 and after_amount < before_amount:
+            finalized.append(_preference_summary_item(preference, item["reason"], "applied"))
+        elif direction is not None and after_amount != before_amount:
+            finalized.append(_preference_summary_item(preference, item["reason"], "partially_applied"))
+        elif bucket is None:
+            finalized.append(_preference_summary_item(preference, item["reason"], "unavailable"))
+        else:
+            finalized.append(_preference_summary_item(preference, item["reason"], "blocked_by_market_conditions"))
+    return finalized
 
 
 def _score_bucket(
@@ -1803,6 +1914,15 @@ def _adaptive_investment_plan(
     }
     if risk_profile == "safe" or crypto_quality < 58:
         bucket_scores["highRisk"] = 0
+    baseline_weights, _ = _weights_from_bucket_scores(
+        bucket_scores,
+        risk_profile,
+        horizon,
+        regime,
+        stock_quality,
+        crypto_quality,
+    )
+    baseline_amounts = _bucket_amounts_from_weights(amount, currency, baseline_weights)
     bucket_scores, preference_summary = _apply_preference_scores(bucket_scores, preferences, risk_profile)
     if avoided_sectors:
         preference_summary.append(
@@ -1811,31 +1931,14 @@ def _adaptive_investment_plan(
                 f"Direct stock picks from {', '.join(sorted(avoided_sectors))} were reduced or excluded where alternatives were available.",
             )
         )
-    raw = {key: max(0, score) ** 1.35 for key, score in bucket_scores.items()}
-    weights = _normalize_adaptive_weights(raw, risk_profile, horizon)
-    caps = _bucket_caps(risk_profile, horizon)
-    caps["max"]["gold"] = _gold_cap(regime, bucket_scores, stock_quality)
-    weights = _rebalance_weight_caps(weights, caps)
-    if risk_profile != "safe" and crypto_quality >= 60 and bucket_scores["highRisk"] >= 58:
-        crypto_floor = 0.03 if risk_profile == "balanced" else 0.06
-        if horizon == "short":
-            crypto_floor *= 0.5
-        crypto_cap = caps["max"]["highRisk"]
-        target_crypto = min(crypto_cap, crypto_floor)
-        if target_crypto > weights.get("highRisk", 0):
-            extra = target_crypto - weights.get("highRisk", 0)
-            weights["highRisk"] = target_crypto
-            minimums = caps["min"]
-            reducers = [
-                key for key in ("stocks", "index", "gold", "cash")
-                if weights.get(key, 0) > minimums.get(key, 0)
-            ]
-            reducer_total = sum(weights[key] - minimums.get(key, 0) for key in reducers) or 1
-            for key in reducers:
-                room = weights[key] - minimums.get(key, 0)
-                weights[key] = max(minimums.get(key, 0), weights[key] - extra * (room / reducer_total))
-            total_weight = sum(weights.values()) or 1
-            weights = {key: value / total_weight for key, value in weights.items()}
+    weights, caps = _weights_from_bucket_scores(
+        bucket_scores,
+        risk_profile,
+        horizon,
+        regime,
+        stock_quality,
+        crypto_quality,
+    )
     weights, override_summary, warnings, rebalance_explanation = _apply_allocation_overrides(
         weights,
         amount,
@@ -1947,6 +2050,8 @@ def _adaptive_investment_plan(
     for bucket in buckets:
         bucket["amountLabel"] = _format_plan_currency(bucket["amount"], currency)
         bucket["percent"] = round((bucket["amount"] / total) * 100)
+    final_amounts = {bucket["kind"]: bucket["amount"] for bucket in buckets}
+    preference_summary = _finalize_preference_summary(preference_summary, baseline_amounts, final_amounts, risk_profile)
     cash_amount = next((bucket["amount"] for bucket in buckets if bucket["kind"] == "cash"), 0)
     crypto_bucket = next((bucket for bucket in buckets if bucket["kind"] == "highRisk"), None)
     crypto_allocations = {asset["symbol"]: asset["amount"] for asset in (crypto_bucket or {}).get("assets", [])}
