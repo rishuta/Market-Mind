@@ -398,7 +398,7 @@ const homePlanPlaceholders = ["Stocks", "SIPs", "Gold", "Cash Buffer"];
 
 // Placeholder public brief content until a live AI Daily Brief endpoint is available.
 const publicDailyBrief =
-  "Markets are calm today as investors wait for the next central bank signal. Inflation pressure continues to cool, while healthcare remains resilient and financials show improving momentum. Caution is still sensible, but quality opportunities remain selective.";
+  "Markets are not giving a strong signal this morning. Investors are waiting for clearer direction, so patience matters more than speed. Inflation pressure is easing, defensive areas remain steady, and quality opportunities are still selective.";
 
 const publicWatchItems = [
   {
@@ -818,17 +818,8 @@ function PublicHomePage({
           <h1 id="public-hero-title">Good morning.</h1>
           <h2>Here&apos;s today&apos;s market story.</h2>
           <p className="subtitle">
-            MarketMind helps everyday investors understand what is happening today, why it matters,
-            and when to build a personal investment plan.
+            A calm briefing on what is happening, why it matters, and what deserves your attention.
           </p>
-          <div className="public-actions">
-            <button className="primary-cta" type="button" onClick={onBuildPlan}>
-              Build My Investment Plan
-            </button>
-            <button className="secondary-cta" type="button" onClick={onSignIn}>
-              Sign In
-            </button>
-          </div>
         </div>
 
         <div className="brief-visual" aria-hidden="true">
@@ -842,12 +833,12 @@ function PublicHomePage({
       </section>
 
       <section className="daily-brief-section calm-reveal" aria-labelledby="brief-title">
-        <p className="eyebrow">AI Daily Brief</p>
-        <h2 id="brief-title">What matters today</h2>
+        <p className="eyebrow">Prepared by MarketMind</p>
+        <h2 id="brief-title">Today&apos;s Brief</h2>
+        <p className="brief-status">
+          MarketMind reviewed overnight markets, economic events, and sector movement.
+        </p>
         <p>{publicDailyBrief}</p>
-        <button className="text-cta" type="button" onClick={onBuildPlan}>
-          Go to Invest to build your personal plan
-        </button>
       </section>
 
       <section className="watch-section calm-reveal" aria-labelledby="watch-title">
@@ -879,6 +870,13 @@ function PublicHomePage({
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="next-step-section calm-reveal" aria-label="Next step">
+        <p>If you are ready to decide how much to invest, MarketMind can build a personal plan next.</p>
+        <button className="text-cta" type="button" onClick={onBuildPlan}>
+          Build your personal plan in Invest
+        </button>
       </section>
     </main>
   );
