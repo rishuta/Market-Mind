@@ -1,8 +1,8 @@
 # MarketMind Product Bible
 
-This is the master product memo for MarketMind.
+This is the master product memo for MarketMind. It explains why MarketMind exists, how product decisions are made, and which principles must never change.
 
-It explains why MarketMind exists, how product decisions are made, and which principles must never change. It is not a technical document. It is the product standard every contributor should carry before designing, building, or reviewing MarketMind.
+This is not a technical document. It is the product standard every contributor should carry before designing, building, or reviewing MarketMind.
 
 ## 1. Mission
 
@@ -49,62 +49,33 @@ The product exists because everyday investors need a calm advisor that can trans
 
 ## 4. Our Philosophy
 
-MarketMind starts with the recommendation.
+MarketMind recommends first and explains second.
 
 Users should not have to inspect charts, model outputs, or scoring systems before they understand the answer. Evidence matters, but it should support the decision rather than replace it.
 
-Decisions come before analytics. Analytics exist behind the scenes so MarketMind can make better recommendations. They should appear only when they help users trust the recommendation.
+Decisions come before analytics. Advice comes before education. Simplicity matters more than feature count. Calm matters more than excitement. Trust matters more than persuasion.
 
-Advice comes before education. MarketMind can teach, but teaching is not the primary job. The primary job is helping the user make a better financial decision.
-
-Simplicity matters more than feature count. A smaller product that gives clear advice is better than a larger product that makes the user think harder.
-
-Calm matters more than excitement. Money decisions are already emotional. MarketMind should lower the user's pulse, not amplify fear, urgency, or hype.
-
-Trust matters more than persuasion. MarketMind should not push users toward action for the sake of engagement. It should be willing to say wait, hold cash, avoid this, or come back later.
+MarketMind should be willing to say wait, hold cash, avoid this, or come back later. The product earns trust by protecting the user from unnecessary action, not by pushing engagement.
 
 ## 5. Non-Negotiables
 
-These rules are permanent.
+These rules are permanent, but the Product Bible should stay high-level. Detailed interaction rules belong in the Design Language, UI Guidelines, Feature Filter, and Roadmap.
 
-- One page, one decision.
-- Human language over financial jargon.
-- Every feature must reduce decision fatigue.
-- Every recommendation must be explainable.
-- Every page should feel calm and trustworthy.
-- Remove before adding.
-- No feature without measurable user value.
-- Recommendation before evidence.
-- Technical details collapsed by default.
-- No raw AI internals unless they improve trust.
-- No feature that duplicates another page's job.
-- No excitement where steadiness is needed.
-
-These rules are the foundation for every future product, design, and engineering review.
+The non-negotiable standard is simple: every page, feature, and recommendation must make the user's next financial decision clearer, calmer, and easier to trust.
 
 ## 6. Brand Personality
 
-MarketMind should feel like a thoughtful financial advisor.
+MarketMind should feel like a thoughtful financial advisor: calm, intelligent, honest, professional, and quietly confident.
 
-It is calm. It does not shout when markets move.
-
-It is intelligent. It uses data, models, market context, and user preferences to make better decisions.
-
-It is honest. It explains uncertainty and does not pretend to know the future.
-
-It is professional. It respects that money decisions are serious.
-
-It is thoughtful. It gives advice in the order a person needs it: what to do, why it makes sense, what could go wrong, and what to inspect if they want more detail.
-
-It is quietly confident. It can make a recommendation without sounding certain about things no one can know.
+It gives advice in the order a person needs it: what to do, why it makes sense, what could go wrong, and what to inspect if they want more detail.
 
 MarketMind is not loud, sensational, fear-driven, sales-focused, or overly technical. It should never sound like a trading influencer, a brokerage ad, a crypto hype feed, or a dashboard trying to impress the user with complexity.
 
 ## 7. North Star
 
-> A user should understand what to do today in under 30 seconds.
+> A user should see the primary recommendation within 10 seconds and understand what to do today within 30 seconds.
 
-This matters because financial confidence is fragile. If a user opens MarketMind and still feels lost after half a minute, the product has failed its purpose.
+This matters because financial confidence is fragile. If a user opens MarketMind and still feels lost after the first view, the product has failed its purpose.
 
 The goal is not that every user acts immediately. Sometimes the right action is to wait. Sometimes it is to hold cash. Sometimes it is to avoid a stock. The point is that the user should understand the next sensible action quickly.
 
@@ -170,3 +141,20 @@ When a feature adds complexity without improving a decision, MarketMind should s
 The best version of MarketMind will not be the one with the most pages, models, charts, or controls. It will be the one that helps people make better financial decisions with less effort and more trust.
 
 Every screen, sentence, recommendation, and product decision should move us closer to that.
+
+## Product Constitution
+
+1. Recommendation before explanation.
+2. One page, one decision.
+3. Human language over financial jargon.
+4. Every feature must reduce decision fatigue.
+5. Remove before adding.
+6. Simplicity beats feature count.
+7. Advice over analytics.
+8. Trust over persuasion.
+9. Never fake confidence or certainty.
+10. Every page must answer a user's decision.
+
+## Before Writing Code
+
+Before any implementation begins, every new feature must be evaluated against the Product Bible. If the idea does not reinforce MarketMind as a calm AI financial advisor that recommends first and explains second, it should be simplified, postponed, or rejected before code is written.
