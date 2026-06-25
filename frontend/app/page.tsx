@@ -295,9 +295,15 @@ type InvestmentPlanResult = {
     status: "applied" | "adjusted";
   }[];
   planExplanation?: string;
+  preferenceAdjustedPlanExplanation?: string | null;
   policyHighlights: string[];
   positions: AllocationPosition[];
   preferenceNote: string;
+  preferenceSummary?: {
+    preference: string;
+    reason: string;
+    status: "applied" | "adjusted" | string;
+  }[];
   progress?: string[];
   ranked: ScannedOpportunity[];
   rebalanceExplanation?: string | null;
@@ -307,26 +313,25 @@ type InvestmentPlanResult = {
   shortlistCount?: number;
   deepAnalyzedCount?: number;
   userOverridesApplied?: boolean;
+  userPreferencesApplied?: boolean;
   universeCount?: number;
   warnings?: string[];
 };
 
-type AllocationOverrideInput = {
-  type: "amount" | "percentage";
-  value: number;
-};
-
-type AllocationOverrideDraft = AllocationOverrideInput & {
-  enabled: boolean;
-  input: string;
+type UserPreferences = {
+  cashPreference?: "default" | "keep_more_cash" | "keep_less_cash";
+  cryptoPreference?: "default" | "allow_crypto" | "avoid_crypto";
+  goldPreference?: "default" | "increase_gold" | "reduce_gold" | "avoid_gold";
+  sectorAvoid?: string[];
+  stockPreference?: "default" | "increase_direct_stocks" | "reduce_direct_stocks" | "avoid_direct_stocks";
 };
 
 type PlannerFormState = {
-  allocationOverrides?: Record<string, AllocationOverrideInput>;
   amount: string;
   currency: CurrencyCode;
   horizon: InvestmentGoal;
   riskProfile: RiskProfile;
+  userPreferences?: UserPreferences;
 };
 
 type PlannerRequest = {
@@ -388,8 +393,6 @@ const allocationPlaceholders = [
   "Gold / ETF",
   "Crypto / high-risk",
 ];
-
-const allocationOverrideBuckets: AllocationBucketKind[] = ["stocks", "index", "gold", "highRisk", "cash"];
 
 const homePlanPlaceholders = ["Stocks", "SIPs", "Gold", "Cash Buffer"];
 
@@ -920,8 +923,12 @@ function InvestMyMoneyPage({
   const [currency, setCurrency] = useState<CurrencyCode>(initialRequest?.input.currency ?? "INR");
   const [riskProfile, setRiskProfile] = useState<RiskProfile>(initialRequest?.input.riskProfile ?? "balanced");
   const [horizon, setHorizon] = useState<InvestmentGoal>(initialRequest?.input.horizon ?? "medium");
+  const [keepMoreCash, setKeepMoreCash] = useState(false);
+  const [preferGold, setPreferGold] = useState(false);
+  const [avoidCrypto, setAvoidCrypto] = useState(false);
+  const [reduceDirectStocks, setReduceDirectStocks] = useState(false);
+  const [avoidTechnology, setAvoidTechnology] = useState(false);
   const [plan, setPlan] = useState<InvestmentPlanResult | null>(null);
-  const [lastPlanInput, setLastPlanInput] = useState<PlannerFormState | null>(initialRequest?.input ?? null);
   const [scanError, setScanError] = useState("");
   const [scanMessage, setScanMessage] = useState("Scanning market...");
   const [isScanning, setIsScanning] = useState(false);
@@ -938,7 +945,6 @@ function InvestMyMoneyPage({
 
     setIsScanning(true);
     setScanError("");
-    setLastPlanInput(input);
     setScanMessage("Scanning market...");
     const shortlistTimer = window.setTimeout(() => setScanMessage("Shortlisting best setups..."), 900);
     const marketTimer = window.setTimeout(() => setScanMessage("Analyzing market conditions..."), 1600);
@@ -949,10 +955,10 @@ function InvestMyMoneyPage({
       const nextPlan = await Promise.all([
         buildPersonalInvestmentPlan({
           amount: numericAmount,
-          allocationOverrides: input.allocationOverrides,
           currency: input.currency,
           horizon: input.horizon,
           riskProfile: input.riskProfile,
+          userPreferences: input.userPreferences,
         }),
         minimumLoading,
       ]).then(([result]) => result);
@@ -989,7 +995,19 @@ function InvestMyMoneyPage({
 
   async function generatePlan(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await runPlanScan({ amount, currency, horizon, riskProfile });
+    await runPlanScan({
+      amount,
+      currency,
+      horizon,
+      riskProfile,
+      userPreferences: {
+        cashPreference: keepMoreCash ? "keep_more_cash" : "default",
+        cryptoPreference: avoidCrypto ? "avoid_crypto" : "default",
+        goldPreference: preferGold ? "increase_gold" : "default",
+        sectorAvoid: avoidTechnology ? ["Technology"] : [],
+        stockPreference: reduceDirectStocks ? "reduce_direct_stocks" : "default",
+      },
+    });
   }
 
   return (
@@ -1059,6 +1077,30 @@ function InvestMyMoneyPage({
               </div>
             </fieldset>
 
+            <fieldset className="preference-checks">
+              <legend>Any preferences for this plan?</legend>
+              <label>
+                <input checked={keepMoreCash} type="checkbox" onChange={(event) => setKeepMoreCash(event.target.checked)} />
+                <span>I want to keep more cash</span>
+              </label>
+              <label>
+                <input checked={preferGold} type="checkbox" onChange={(event) => setPreferGold(event.target.checked)} />
+                <span>I prefer more gold</span>
+              </label>
+              <label>
+                <input checked={avoidCrypto} type="checkbox" onChange={(event) => setAvoidCrypto(event.target.checked)} />
+                <span>Avoid crypto</span>
+              </label>
+              <label>
+                <input checked={reduceDirectStocks} type="checkbox" onChange={(event) => setReduceDirectStocks(event.target.checked)} />
+                <span>Reduce direct stocks</span>
+              </label>
+              <label>
+                <input checked={avoidTechnology} type="checkbox" onChange={(event) => setAvoidTechnology(event.target.checked)} />
+                <span>Avoid technology stocks</span>
+              </label>
+            </fieldset>
+
             <button type="submit" disabled={isScanning}>
               {isScanning ? (
                 <span className="button-loading"><i aria-hidden="true" />Analyzing...</span>
@@ -1076,11 +1118,7 @@ function InvestMyMoneyPage({
         {plan ? (
           <section ref={resultRef} className="plan-result-section reveal-plan" aria-label="Recommended allocation">
             <InvestmentPlanResults
-              baseInput={lastPlanInput ?? { amount, currency, horizon, riskProfile }}
-              isRebalancing={isScanning}
               onAnalyze={onAnalyze}
-              onRebalance={runPlanScan}
-              onReset={() => runPlanScan({ ...(lastPlanInput ?? { amount, currency, horizon, riskProfile }), allocationOverrides: undefined })}
               plan={plan}
             />
           </section>
@@ -1125,52 +1163,17 @@ function PlanEmptyState() {
 }
 
 function InvestmentPlanResults({
-  baseInput,
-  isRebalancing,
   onAnalyze,
-  onRebalance,
-  onReset,
   plan,
 }: {
-  baseInput: PlannerFormState;
-  isRebalancing: boolean;
   onAnalyze: (opportunity: ScannedOpportunity) => void;
-  onRebalance: (input: PlannerFormState) => Promise<void>;
-  onReset: () => Promise<void>;
   plan: InvestmentPlanResult;
 }) {
   const [selectedBucket, setSelectedBucket] = useState<AllocationBucketKind>(plan.buckets[0]?.kind ?? "index");
-  const [overrideDrafts, setOverrideDrafts] = useState<Record<AllocationBucketKind, AllocationOverrideDraft>>(() =>
-    buildInitialOverrideDrafts(),
-  );
   const activeBucket = plan.buckets.find((bucket) => bucket.kind === selectedBucket) ?? plan.buckets[0];
-  const market = getMarketInfo("", null, plan.currency);
   const topPicks = plan.positions.slice(0, 3);
   const totalAmount = plan.cashAmount + plan.investAmount;
   const expectedReturn = getExpectedReturnRange(plan.riskProfile, plan.horizon);
-
-  function updateOverrideDraft(kind: AllocationBucketKind, updates: Partial<AllocationOverrideDraft>) {
-    setOverrideDrafts((current) => ({
-      ...current,
-      [kind]: {
-        ...current[kind],
-        ...updates,
-      },
-    }));
-  }
-
-  async function applyRebalance() {
-    const allocationOverrides = buildAllocationOverrides(overrideDrafts);
-    await onRebalance({
-      ...baseInput,
-      allocationOverrides,
-    });
-  }
-
-  async function resetMarketMindPlan() {
-    setOverrideDrafts(buildInitialOverrideDrafts());
-    await onReset();
-  }
 
   return (
     <div className="plan-results">
@@ -1220,17 +1223,7 @@ function InvestmentPlanResults({
         ))}
       </div>
 
-      <AllocationOverrideEditor
-        currency={plan.currency}
-        drafts={overrideDrafts}
-        isRebalancing={isRebalancing}
-        onApply={applyRebalance}
-        onReset={resetMarketMindPlan}
-        onUpdate={updateOverrideDraft}
-        plan={plan}
-      />
-
-      <PlanOverrideMessages plan={plan} />
+      <PlanPreferenceMessages plan={plan} />
 
       <p className="hover-helper">Hover over a card to see full details</p>
 
@@ -1272,172 +1265,25 @@ function PlanKpi({ label, value }: { label: string; value: string }) {
   );
 }
 
-function AllocationOverrideEditor({
-  currency,
-  drafts,
-  isRebalancing,
-  onApply,
-  onReset,
-  onUpdate,
-  plan,
-}: {
-  currency: CurrencyCode;
-  drafts: Record<AllocationBucketKind, AllocationOverrideDraft>;
-  isRebalancing: boolean;
-  onApply: () => Promise<void>;
-  onReset: () => Promise<void>;
-  onUpdate: (kind: AllocationBucketKind, updates: Partial<AllocationOverrideDraft>) => void;
-  plan: InvestmentPlanResult;
-}) {
-  const market = getMarketInfo("", null, currency);
-  const hasEditedBucket = allocationOverrideBuckets.some((kind) => drafts[kind]?.enabled && Number(drafts[kind]?.input) >= 0);
+function PlanPreferenceMessages({ plan }: { plan: InvestmentPlanResult }) {
+  const messages = plan.preferenceSummary ?? [];
 
-  return (
-    <section className="allocation-override-panel" aria-label="Edit allocation buckets">
-      <div className="override-panel-head">
-        <div>
-          <h3>Adjust allocations</h3>
-          <p>Change one or more buckets. MarketMind will keep your edits and rebalance the rest using today&apos;s market conditions.</p>
-        </div>
-        <div className="override-actions">
-          <button type="button" disabled={isRebalancing || !hasEditedBucket} onClick={onApply}>
-            {isRebalancing ? "Rebalancing..." : "Rebalance Remaining"}
-          </button>
-          <button type="button" className="secondary-action" disabled={isRebalancing} onClick={onReset}>
-            Reset to MarketMind Plan
-          </button>
-        </div>
-      </div>
-
-      <div className="allocation-override-grid">
-        {allocationOverrideBuckets.map((kind) => {
-          const bucket = plan.buckets.find((item) => item.kind === kind);
-          const draft = drafts[kind];
-
-          return (
-            <article key={kind} className={`allocation-override-row bucket-${kind}`}>
-              <div className="override-bucket-label">
-                <span className="bucket-icon" aria-hidden="true">{getBucketIcon(kind)}</span>
-                <div>
-                  <strong>{getOverrideBucketTitle(kind)}</strong>
-                  <small>{bucket ? `${bucket.amountLabel} · ${bucket.percent}% now` : `${formatPlanCurrency(0, market)} · 0% now`}</small>
-                </div>
-              </div>
-
-              <div className="override-type-toggle" aria-label={`${getOverrideBucketTitle(kind)} edit type`}>
-                <button
-                  type="button"
-                  className={draft.type === "amount" ? "active" : ""}
-                  onClick={() => onUpdate(kind, { type: "amount" })}
-                >
-                  Amount
-                </button>
-                <button
-                  type="button"
-                  className={draft.type === "percentage" ? "active" : ""}
-                  onClick={() => onUpdate(kind, { type: "percentage" })}
-                >
-                  %
-                </button>
-              </div>
-
-              <label className="override-value-input">
-                <span>{draft.type === "amount" ? "Amount" : "Percent"}</span>
-                <input
-                  inputMode="decimal"
-                  placeholder={draft.type === "amount" ? String(Math.round(bucket?.amount ?? 0)) : String(bucket?.percent ?? 0)}
-                  type="text"
-                  value={draft.input}
-                  onChange={(event) => onUpdate(kind, { enabled: true, input: cleanOverrideInput(event.target.value, draft.type) })}
-                />
-              </label>
-
-              <button
-                type="button"
-                className="clear-override"
-                disabled={!draft.enabled}
-                onClick={() => onUpdate(kind, { enabled: false, input: "" })}
-              >
-                Clear
-              </button>
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function PlanOverrideMessages({ plan }: { plan: InvestmentPlanResult }) {
-  const messages = [
-    ...(plan.overrideSummary ?? []).map((item) => {
-      if (item.status === "applied") {
-        return `${item.bucket} was kept at ${item.final} because you edited it.`;
-      }
-      return `${item.bucket} was changed to ${item.final}. ${item.reason}`;
-    }),
-    ...(plan.warnings ?? []),
-  ];
-
-  if (!plan.userOverridesApplied && !messages.length && !plan.rebalanceExplanation) {
+  if (!plan.userPreferencesApplied && !messages.length && !plan.preferenceAdjustedPlanExplanation) {
     return null;
   }
 
   return (
-    <section className="override-message-panel" aria-label="Rebalance notes">
-      {plan.rebalanceExplanation ? <p>{plan.rebalanceExplanation}</p> : null}
+    <section className="preference-message-panel" aria-label="Preference notes">
+      {plan.preferenceAdjustedPlanExplanation ? <p>{plan.preferenceAdjustedPlanExplanation}</p> : null}
       {messages.length ? (
         <ul>
           {messages.map((message, index) => (
-            <li key={`${message}-${index}`}>{message}</li>
+            <li key={`${message.preference}-${index}`}>{message.reason}</li>
           ))}
         </ul>
       ) : null}
     </section>
   );
-}
-
-function buildInitialOverrideDrafts(): Record<AllocationBucketKind, AllocationOverrideDraft> {
-  return allocationOverrideBuckets.reduce((drafts, kind) => {
-    drafts[kind] = {
-      enabled: false,
-      input: "",
-      type: "amount",
-      value: 0,
-    };
-    return drafts;
-  }, {} as Record<AllocationBucketKind, AllocationOverrideDraft>);
-}
-
-function buildAllocationOverrides(drafts: Record<AllocationBucketKind, AllocationOverrideDraft>) {
-  return allocationOverrideBuckets.reduce((overrides, kind) => {
-    const draft = drafts[kind];
-    const value = Number(draft.input);
-    if (draft.enabled && Number.isFinite(value) && value >= 0) {
-      overrides[getOverrideBucketTitle(kind)] = {
-        type: draft.type,
-        value,
-      };
-    }
-    return overrides;
-  }, {} as Record<string, AllocationOverrideInput>);
-}
-
-function cleanOverrideInput(value: string, type: "amount" | "percentage") {
-  const cleaned = type === "amount" ? value.replace(/[^\d.]/g, "") : value.replace(/[^\d.]/g, "");
-  const [whole, ...rest] = cleaned.split(".");
-  const decimal = rest.join("");
-  return decimal ? `${whole}.${decimal.slice(0, 2)}` : whole;
-}
-
-function getOverrideBucketTitle(kind: AllocationBucketKind) {
-  return {
-    cash: "Cash",
-    gold: "Gold",
-    highRisk: "Crypto",
-    index: "Index/SIP",
-    stocks: "AI Stocks",
-  }[kind];
 }
 
 function getRiskProfileLabel(riskProfile: RiskProfile) {
@@ -2446,10 +2292,10 @@ async function postJson<T>(url: string, body: unknown, timeoutMs = 45000): Promi
 
 type PersonalPlanInput = {
   amount: number;
-  allocationOverrides?: Record<string, AllocationOverrideInput>;
   currency: CurrencyCode;
   horizon: InvestmentGoal;
   riskProfile: RiskProfile;
+  userPreferences?: UserPreferences;
 };
 
 type OpportunityScoreInput = {
@@ -2471,18 +2317,31 @@ async function buildPersonalInvestmentPlan(input: PersonalPlanInput): Promise<In
   try {
     return await postJson<InvestmentPlanResult>(`${apiUrl}/invest-plan`, {
       amount: input.amount,
-      allocationOverrides: input.allocationOverrides,
       currency: input.currency,
       horizon: input.horizon,
       riskProfile: input.riskProfile,
+      userPreferences: input.userPreferences,
     });
   } catch (error) {
-    if (input.allocationOverrides && Object.keys(input.allocationOverrides).length) {
+    if (hasActiveUserPreferences(input.userPreferences)) {
       throw error;
     }
     console.warn("Backend invest-plan unavailable, using frontend fallback.", error);
     return buildClientPersonalInvestmentPlan(input);
   }
+}
+
+function hasActiveUserPreferences(preferences?: UserPreferences) {
+  if (!preferences) {
+    return false;
+  }
+  return Boolean(
+    (preferences.cashPreference && preferences.cashPreference !== "default")
+    || (preferences.cryptoPreference && preferences.cryptoPreference !== "default")
+    || (preferences.goldPreference && preferences.goldPreference !== "default")
+    || (preferences.stockPreference && preferences.stockPreference !== "default")
+    || preferences.sectorAvoid?.length,
+  );
 }
 
 async function buildClientPersonalInvestmentPlan(input: PersonalPlanInput): Promise<InvestmentPlanResult> {

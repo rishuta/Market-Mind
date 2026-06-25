@@ -164,6 +164,7 @@ class InvestPlanRequest(BaseModel):
     risk: str | None = None
     horizon: str
     allocationOverrides: dict[str, Any] | None = None
+    userPreferences: dict[str, Any] | None = None
 
 app = FastAPI(
     title="MarketMind AI Backend",
@@ -1395,6 +1396,94 @@ def _normalize_adaptive_weights(raw: dict[str, float], risk_profile: str, horizo
     return _rebalance_weight_caps(weights, caps)
 
 
+def _normalize_user_preferences(preferences: dict[str, Any] | None) -> dict[str, Any]:
+    preferences = preferences if isinstance(preferences, dict) else {}
+    allowed = {
+        "cashPreference": {"default", "keep_more_cash", "keep_less_cash"},
+        "goldPreference": {"default", "increase_gold", "reduce_gold", "avoid_gold"},
+        "cryptoPreference": {"default", "allow_crypto", "avoid_crypto"},
+        "stockPreference": {"default", "increase_direct_stocks", "reduce_direct_stocks", "avoid_direct_stocks"},
+    }
+    normalized = {
+        key: str(preferences.get(key) or "default").strip().lower()
+        for key in allowed
+    }
+    for key, values in allowed.items():
+        if normalized[key] not in values:
+            normalized[key] = "default"
+    sectors = preferences.get("sectorAvoid") if isinstance(preferences, dict) else None
+    normalized["sectorAvoid"] = [
+        str(sector).strip().lower()
+        for sector in (sectors if isinstance(sectors, list) else [])
+        if str(sector).strip()
+    ]
+    return normalized
+
+
+def _preference_summary_item(preference: str, reason: str, status: str = "applied") -> dict[str, str]:
+    return {"preference": preference, "status": status, "reason": reason}
+
+
+def _apply_preference_scores(
+    bucket_scores: dict[str, float],
+    preferences: dict[str, Any],
+    risk_profile: str,
+) -> tuple[dict[str, float], list[dict[str, str]]]:
+    scores = {key: float(value) for key, value in bucket_scores.items()}
+    summary: list[dict[str, str]] = []
+
+    cash_preference = preferences["cashPreference"]
+    if cash_preference == "keep_more_cash":
+        scores["cash"] = _clamp_score(scores["cash"] + 45)
+        summary.append(_preference_summary_item(cash_preference, "Cash was favored because you prefer a larger reserve."))
+    elif cash_preference == "keep_less_cash":
+        scores["cash"] = _clamp_score(scores["cash"] - 12)
+        summary.append(_preference_summary_item(cash_preference, "Cash was reduced where your risk profile still allows it."))
+
+    gold_preference = preferences["goldPreference"]
+    if gold_preference == "increase_gold":
+        scores["gold"] = _clamp_score(scores["gold"] + 18)
+        summary.append(_preference_summary_item(gold_preference, "Gold was favored as a larger hedge in the plan."))
+    elif gold_preference == "reduce_gold":
+        scores["gold"] = _clamp_score(scores["gold"] - 16)
+        summary.append(_preference_summary_item(gold_preference, "Gold was reduced where diversification still remains sensible."))
+    elif gold_preference == "avoid_gold":
+        scores["gold"] = 0
+        summary.append(_preference_summary_item(gold_preference, "Gold was excluded because you prefer to avoid it."))
+
+    crypto_preference = preferences["cryptoPreference"]
+    if crypto_preference == "avoid_crypto":
+        scores["highRisk"] = 0
+        summary.append(_preference_summary_item(crypto_preference, "Crypto was excluded because you prefer to avoid it."))
+    elif crypto_preference == "allow_crypto":
+        if risk_profile == "safe":
+            summary.append(_preference_summary_item(crypto_preference, "Crypto stayed excluded because Safe risk rules override this preference.", "adjusted"))
+        else:
+            scores["highRisk"] = _clamp_score(max(scores["highRisk"], 58))
+            summary.append(_preference_summary_item(crypto_preference, "Crypto was allowed within your risk profile limit."))
+
+    stock_preference = preferences["stockPreference"]
+    if stock_preference == "increase_direct_stocks":
+        scores["stocks"] = _clamp_score(scores["stocks"] + 14)
+        summary.append(_preference_summary_item(stock_preference, "Direct AI stock picks were favored within your profile cap."))
+    elif stock_preference == "reduce_direct_stocks":
+        scores["stocks"] = _clamp_score(scores["stocks"] - 22)
+        summary.append(_preference_summary_item(stock_preference, "Direct AI stock exposure was reduced and the rest can move to diversified buckets."))
+    elif stock_preference == "avoid_direct_stocks":
+        scores["stocks"] = 0
+        summary.append(_preference_summary_item(stock_preference, "Direct AI stock picks were avoided where possible."))
+
+    if risk_profile == "safe":
+        scores["highRisk"] = 0
+    return scores, summary
+
+
+def _preference_plan_explanation(summary: list[dict[str, str]]) -> str | None:
+    if not summary:
+        return None
+    return "MarketMind adjusted the plan for your preferences while keeping risk caps and adaptive market scoring in control."
+
+
 def _score_bucket(
     kind: str,
     market_opportunity: float,
@@ -1614,7 +1703,9 @@ def _adaptive_investment_plan(
     ranked: list[dict[str, Any]],
     final_stock_pool: list[dict[str, Any]],
     allocation_overrides: dict[str, Any] | None = None,
+    user_preferences: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    preferences = _normalize_user_preferences(user_preferences)
     regime = _market_regime(ranked, currency)
     market_sentiment = _market_sentiment_score(ranked)
     market_sentiment_details = _market_sentiment_details(ranked, regime)
@@ -1648,7 +1739,17 @@ def _adaptive_investment_plan(
     if fallback_items:
         ranked = [*ranked, *fallback_items]
         final_stock_pool = [*final_stock_pool, *fallback_items]
-    stocks = [item for item in final_stock_pool if item.get("assetType", "stock") == "stock" and _asset_price(item.get("stock")) is not None]
+    avoided_sectors = set(preferences["sectorAvoid"])
+    final_stock_pool_for_selection = [
+        item for item in final_stock_pool
+        if item.get("assetType", "stock") != "stock"
+        or str(item.get("sector") or _sector_for_symbol(str(item.get("symbol", "")))).strip().lower() not in avoided_sectors
+    ]
+    stocks = [
+        item for item in final_stock_pool_for_selection
+        if item.get("assetType", "stock") == "stock"
+        and _asset_price(item.get("stock")) is not None
+    ]
     etfs = [item for item in ranked if item.get("assetType") == "etf" and _asset_price(item.get("stock")) is not None]
     crypto = [item for item in ranked if item.get("assetType") == "crypto" and _asset_price(item.get("stock")) is not None]
     crypto_by_symbol = {str(item.get("symbol")): item for item in ranked if item.get("assetType") == "crypto"}
@@ -1702,6 +1803,14 @@ def _adaptive_investment_plan(
     }
     if risk_profile == "safe" or crypto_quality < 58:
         bucket_scores["highRisk"] = 0
+    bucket_scores, preference_summary = _apply_preference_scores(bucket_scores, preferences, risk_profile)
+    if avoided_sectors:
+        preference_summary.append(
+            _preference_summary_item(
+                "sectorAvoid",
+                f"Direct stock picks from {', '.join(sorted(avoided_sectors))} were reduced or excluded where alternatives were available.",
+            )
+        )
     raw = {key: max(0, score) ** 1.35 for key, score in bucket_scores.items()}
     weights = _normalize_adaptive_weights(raw, risk_profile, horizon)
     caps = _bucket_caps(risk_profile, horizon)
@@ -1777,7 +1886,7 @@ def _adaptive_investment_plan(
             }[kind],
         })
     stock_bucket = next((bucket for bucket in buckets if bucket["kind"] == "stocks"), {"amount": 0})
-    stock_allocation = _select_adaptive_stocks(stock_bucket["amount"], currency, final_stock_pool, risk_profile, horizon)
+    stock_allocation = _select_adaptive_stocks(stock_bucket["amount"], currency, final_stock_pool_for_selection, risk_profile, horizon)
     if stock_bucket["amount"] and stock_allocation["investAmount"] < stock_bucket["amount"] and not stock_bucket.get("lockedByUser"):
         unused = stock_bucket["amount"] - stock_allocation["investAmount"]
         stock_bucket["amount"] = stock_allocation["investAmount"]
@@ -1865,11 +1974,14 @@ def _adaptive_investment_plan(
         "marketRegime": regime,
         "marketSentiment": market_sentiment_details,
         "planExplanation": _plan_explanation(bucket_scores, {bucket["kind"]: bucket["amount"] / total for bucket in buckets}, regime),
+        "preferenceAdjustedPlanExplanation": _preference_plan_explanation(preference_summary),
+        "preferenceSummary": preference_summary,
         "positions": stock_allocation["positions"],
         "rebalanceExplanation": rebalance_explanation,
         "sectorSentiment": {key: round(value) for key, value in sector_sentiment.items()},
         "overrideSummary": override_summary,
         "userOverridesApplied": bool(override_summary),
+        "userPreferencesApplied": bool(preference_summary),
         "warnings": warnings,
     }
 
@@ -2509,6 +2621,7 @@ def create_invest_plan(payload: InvestPlanRequest) -> dict[str, Any]:
         ranked,
         final_stock_pool,
         payload.allocationOverrides,
+        payload.userPreferences,
     )
     final_buckets = adaptive_plan["buckets"]
     cash_amount = adaptive_plan["cashAmount"]
@@ -2538,9 +2651,11 @@ def create_invest_plan(payload: InvestPlanRequest) -> dict[str, Any]:
         "marketSentiment": adaptive_plan["marketSentiment"],
         "overrideSummary": adaptive_plan["overrideSummary"],
         "planExplanation": adaptive_plan["planExplanation"],
+        "preferenceAdjustedPlanExplanation": adaptive_plan["preferenceAdjustedPlanExplanation"],
         "policyHighlights": _policy_highlights(cash_amount, amount, tuning, horizon),
         "positions": adaptive_plan["positions"],
         "preferenceNote": _preference_note(risk_profile, horizon),
+        "preferenceSummary": adaptive_plan["preferenceSummary"],
         "progress": progress,
         "ranked": ranked,
         "riskProfile": risk_profile,
@@ -2550,6 +2665,7 @@ def create_invest_plan(payload: InvestPlanRequest) -> dict[str, Any]:
         "shortlistCount": len(fast_shortlist),
         "deepAnalyzedCount": len(deep_results),
         "userOverridesApplied": adaptive_plan["userOverridesApplied"],
+        "userPreferencesApplied": adaptive_plan["userPreferencesApplied"],
         "universeCount": len(INVEST_PLAN_UNIVERSE),
         "warnings": adaptive_plan["warnings"],
     }

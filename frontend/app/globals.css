@@ -862,167 +862,45 @@ select,
   background: rgba(222, 248, 226, 0.92);
 }
 
-.allocation-override-panel,
-.override-message-panel {
+.preference-message-panel {
   display: grid;
-  gap: 16px;
+  gap: 10px;
   padding: 18px;
-  border: 1px solid rgba(20, 33, 42, 0.08);
+  border: 1px solid rgba(15, 139, 141, 0.18);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.76);
   box-shadow: 0 18px 42px rgba(22, 35, 45, 0.07);
 }
 
-.override-panel-head {
+.preference-checks .segmented-options,
+.preference-checks {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px;
-  align-items: start;
+  gap: 10px;
 }
 
-.override-panel-head h3 {
-  margin: 0 0 6px;
-  font-size: 1.1rem;
+.preference-checks label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(20, 33, 42, 0.07);
+  border-radius: 10px;
+  background: rgba(248, 251, 251, 0.72);
+  color: var(--ink);
 }
 
-.override-panel-head p,
-.override-message-panel p {
+.preference-checks input {
+  width: auto;
+  min-height: 0;
+}
+
+.preference-message-panel p {
   margin: 0;
   color: var(--muted);
   line-height: 1.5;
 }
 
-.override-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.override-actions button,
-.clear-override,
-.override-type-toggle button {
-  border: 1px solid rgba(20, 33, 42, 0.1);
-  border-radius: 8px;
-  background: #ffffff;
-  color: var(--ink);
-  cursor: pointer;
-  font: inherit;
-  font-weight: 800;
-  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, opacity 180ms ease;
-}
-
-.override-actions button {
-  padding: 11px 14px;
-  background: var(--accent);
-  color: #ffffff;
-}
-
-.override-actions .secondary-action {
-  background: #ffffff;
-  color: var(--accent-dark);
-}
-
-.override-actions button:disabled,
-.clear-override:disabled {
-  cursor: not-allowed;
-  opacity: 0.48;
-}
-
-.allocation-override-grid {
-  display: grid;
-  gap: 10px;
-}
-
-.allocation-override-row {
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) auto minmax(130px, 160px) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 12px;
-  border: 1px solid rgba(20, 33, 42, 0.07);
-  border-radius: 10px;
-  background: rgba(248, 251, 251, 0.72);
-}
-
-.override-bucket-label {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.override-bucket-label .bucket-icon {
-  width: 42px;
-  height: 42px;
-  font-size: 1.1rem;
-}
-
-.override-bucket-label strong {
-  display: block;
-  color: var(--ink);
-  line-height: 1.2;
-}
-
-.override-bucket-label small {
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.override-type-toggle {
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 9px;
-  background: rgba(20, 33, 42, 0.06);
-}
-
-.override-type-toggle button {
-  min-width: 66px;
-  padding: 8px 10px;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-}
-
-.override-type-toggle button.active {
-  background: #ffffff;
-  color: var(--accent-dark);
-  box-shadow: 0 6px 18px rgba(22, 35, 45, 0.08);
-}
-
-.override-value-input {
-  display: grid;
-  gap: 4px;
-}
-
-.override-value-input span {
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-
-.override-value-input input {
-  width: 100%;
-  min-height: 40px;
-  padding: 9px 10px;
-  border: 1px solid rgba(20, 33, 42, 0.13);
-  border-radius: 8px;
-  background: #ffffff;
-  color: var(--ink);
-  font: inherit;
-}
-
-.clear-override {
-  min-height: 40px;
-  padding: 8px 12px;
-  color: var(--muted);
-}
-
-.override-message-panel {
-  gap: 10px;
-  border-color: rgba(15, 139, 141, 0.18);
-}
-
-.override-message-panel ul {
+.preference-message-panel ul {
   display: grid;
   gap: 8px;
   margin: 0;
@@ -5080,19 +4958,6 @@ h1 {
 
   .allocation-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .override-panel-head,
-  .allocation-override-row {
-    grid-template-columns: 1fr;
-  }
-
-  .override-actions {
-    justify-content: stretch;
-  }
-
-  .override-actions button {
-    flex: 1 1 180px;
   }
 
   .opportunity-grid,
