@@ -396,6 +396,26 @@ const allocationPlaceholders = [
 
 const homePlanPlaceholders = ["Stocks", "SIPs", "Gold", "Cash Buffer"];
 
+const publicMarketStats = [
+  { label: "Market regime", value: "Balanced with pockets of caution", note: "Placeholder for future live integration" },
+  { label: "Sentiment", value: "Neutral to constructive", note: "Placeholder for future live integration" },
+  { label: "Volatility", value: "Moderate", note: "Placeholder for future live integration" },
+  { label: "Fear & Greed", value: "Coming soon", note: "Placeholder metric" },
+];
+
+const publicSectorStrength = [
+  { sector: "Technology", view: "Selective strength", rank: "1" },
+  { sector: "Financials", view: "Stable leadership", rank: "2" },
+  { sector: "Healthcare", view: "Defensive support", rank: "3" },
+  { sector: "Consumer", view: "Mixed signals", rank: "4" },
+];
+
+const publicWatchItems = [
+  "Inflation update and central bank commentary",
+  "Large-cap earnings and guidance revisions",
+  "Currency moves affecting international exposure",
+];
+
 const opportunityPlaceholders = [
   { name: "Reliance Industries", score: "8.4 / 10", setup: "Strong", risk: "Medium" },
   { name: "Microsoft", score: "8.1 / 10", setup: "Quality compounder", risk: "Low" },
@@ -422,6 +442,7 @@ const opportunityUniverse: OpportunityUniverseItem[] = [
 ];
 
 export default function Home() {
+  const [showPublicExperience, setShowPublicExperience] = useState(true);
   const [activeView, setActiveView] = useState<AppView>("home");
   const [symbol, setSymbol] = useState("");
   const [amountInput, setAmountInput] = useState("10000");
@@ -550,6 +571,20 @@ export default function Home() {
   const activeSymbol = resolvedStock?.symbol ?? stockData?.symbol ?? analysisData?.symbol ?? backtestData?.symbol ?? symbol.trim().toUpperCase();
   const market = getMarketInfo(activeSymbol);
   const selectedCurrency = currencyOverride ?? detectDefaultCurrency(activeSymbol, companyProfile?.currency);
+
+  function enterApp(view: AppView) {
+    setActiveView(view);
+    setShowPublicExperience(false);
+  }
+
+  if (showPublicExperience) {
+    return (
+      <PublicHomePage
+        onBuildPlan={() => enterApp("invest")}
+        onSignIn={() => enterApp("home")}
+      />
+    );
+  }
 
   return (
     <main className="dashboard">
@@ -740,6 +775,161 @@ export default function Home() {
       ) : null}
         </>
       ) : null}
+    </main>
+  );
+}
+
+function PublicHomePage({
+  onBuildPlan,
+  onSignIn,
+}: {
+  onBuildPlan: () => void;
+  onSignIn: () => void;
+}) {
+  return (
+    <main className="public-page">
+      <header className="public-header">
+        <strong>MarketMind AI</strong>
+        <button className="secondary-cta" type="button" onClick={onSignIn}>
+          Sign In
+        </button>
+      </header>
+
+      <section className="public-hero" aria-labelledby="public-hero-title">
+        <div className="public-hero-copy">
+          <p className="eyebrow">AI financial advisor</p>
+          <h1 id="public-hero-title">Know what to do with your money.</h1>
+          <p className="subtitle">
+            MarketMind turns market conditions, stock analysis, and investment planning into calm,
+            practical guidance for everyday investors.
+          </p>
+          <div className="public-actions">
+            <button className="primary-cta" type="button" onClick={onBuildPlan}>
+              Build My Investment Plan
+            </button>
+            <button className="secondary-cta" type="button" onClick={onSignIn}>
+              Sign In
+            </button>
+          </div>
+        </div>
+
+        <aside className="public-advisor-panel" aria-label="MarketMind preview">
+          <span>Today&apos;s advisor note</span>
+          <strong>Hold some cash, stay selective, and avoid chasing crowded trades.</strong>
+          <p>
+            MarketMind starts with the action first, then shows why the recommendation makes sense.
+          </p>
+        </aside>
+      </section>
+
+      <section className="public-section" aria-labelledby="market-title">
+        <div className="public-section-heading">
+          <p className="eyebrow">Today&apos;s Market</p>
+          <h2 id="market-title">A quick read before you act</h2>
+        </div>
+        <div className="public-metric-grid">
+          {publicMarketStats.map((item) => (
+            <article key={item.label} className="public-card">
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+              <p>{item.note}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="public-section public-brief" aria-labelledby="brief-title">
+        <div>
+          <p className="eyebrow">AI Daily Brief</p>
+          <h2 id="brief-title">MarketMind&apos;s take</h2>
+        </div>
+        <p>
+          Today looks reasonable for selective investing, but not for rushing. Keep enough cash
+          available, favor diversified exposure first, and review direct stocks only when the setup
+          is clearly worth the risk.
+        </p>
+        <small>Placeholder brief for future live AI integration.</small>
+      </section>
+
+      <section className="public-section" aria-labelledby="sector-title">
+        <div className="public-section-heading">
+          <p className="eyebrow">Sector Strength</p>
+          <h2 id="sector-title">Where conditions look healthier</h2>
+        </div>
+        <div className="sector-rank-grid">
+          {publicSectorStrength.map((item) => (
+            <article key={item.sector} className="public-card sector-card">
+              <b>{item.rank}</b>
+              <div>
+                <strong>{item.sector}</strong>
+                <p>{item.view}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="public-section" aria-labelledby="watch-title">
+        <div className="public-section-heading">
+          <p className="eyebrow">Things To Watch</p>
+          <h2 id="watch-title">Signals that could affect the plan</h2>
+        </div>
+        <div className="watch-list">
+          {publicWatchItems.map((item) => (
+            <article key={item} className="public-card">
+              <strong>{item}</strong>
+              <p>Placeholder event for future live economic calendar integration.</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="public-section locked-plan" aria-labelledby="plan-preview-title">
+        <div>
+          <p className="eyebrow">Personalized Plan Preview</p>
+          <h2 id="plan-preview-title">Your plan unlocks after you create an account</h2>
+          <p>
+            MarketMind can show how much to invest, how much cash to keep, what to focus on, and
+            what to avoid based on your risk profile.
+          </p>
+        </div>
+        <div className="locked-preview" aria-label="Locked investment plan preview">
+          {["Invest amount", "Cash to hold", "Focus area", "What to avoid"].map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+        </div>
+        <button className="primary-cta" type="button" onClick={onSignIn}>
+          Create Account To Unlock
+        </button>
+      </section>
+
+      <section className="public-section" aria-labelledby="why-title">
+        <div className="public-section-heading">
+          <p className="eyebrow">Why MarketMind</p>
+          <h2 id="why-title">Advice before analytics</h2>
+        </div>
+        <div className="why-grid">
+          {[
+            {
+              title: "AI Daily Brief",
+              description: "Understand what changed today and what it means for your money.",
+            },
+            {
+              title: "Investment Planning",
+              description: "See how much to invest, what to hold, and where to stay cautious.",
+            },
+            {
+              title: "Stock Analysis",
+              description: "Get a decision-first view before digging into deeper evidence.",
+            },
+          ].map((item) => (
+            <article key={item.title} className="public-card">
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

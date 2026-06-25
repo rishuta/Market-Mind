@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "MarketMind AI",
-  description: "AI-assisted market intelligence dashboard starter",
+  description: "AI-powered financial advisor for everyday investment decisions",
+};
+
+export const viewport: Viewport = {
+  initialScale: 1,
+  width: "device-width",
 };
 
 export default function RootLayout({
@@ -17,4 +22,3 @@ export default function RootLayout({
     </html>
   );
 }
-
