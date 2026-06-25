@@ -822,11 +822,9 @@ function PublicHomePage({
 
       <section className="public-hero calm-reveal" aria-labelledby="public-hero-title">
         <div className="public-hero-copy">
-          <p className="eyebrow">MarketMind AI</p>
           <h1 id="public-hero-title">Good morning.</h1>
-          <h2>Here&apos;s today&apos;s market story.</h2>
           <p className="subtitle">
-            A quick read on what matters before you make a money decision.
+            Here&apos;s today&apos;s market story before you make a money decision.
           </p>
         </div>
 
@@ -841,17 +839,18 @@ function PublicHomePage({
       </section>
 
       <section className="daily-brief-section calm-reveal" aria-labelledby="brief-title">
-        <p className="eyebrow">Prepared today</p>
         <h2 id="brief-title">Today&apos;s Brief</h2>
         <div className="brief-scan">
           <div className="brief-mood">
-            <span>{publicDailyBrief.moodLabel}</span>
-            <strong>{publicDailyBrief.mood}</strong>
+            <span className="mood-label">{publicDailyBrief.moodLabel}</span>
+            <strong>
+              <span className="mood-signal" aria-hidden="true" />
+              {publicDailyBrief.mood}
+            </strong>
           </div>
-          <p className="brief-conclusion">{publicDailyBrief.conclusion}</p>
-          <div className="brief-reasons" aria-label="Why MarketMind sees it this way">
-            <span>Why</span>
-            <ul>
+          <div className="brief-message">
+            <p className="brief-conclusion">{publicDailyBrief.conclusion}</p>
+            <ul className="brief-reasons" aria-label="Why MarketMind sees it this way">
               {publicDailyBrief.reasons.map((reason) => (
                 <li key={reason}>{reason}</li>
               ))}
@@ -862,8 +861,7 @@ function PublicHomePage({
 
       <section className="watch-section calm-reveal" aria-labelledby="watch-title">
         <div className="section-intro">
-          <p className="eyebrow">Things Worth Watching Today</p>
-          <h2 id="watch-title">Watch Today</h2>
+          <h2 id="watch-title">Things Worth Watching Today</h2>
         </div>
         <div className="watch-list-simple">
           {publicWatchItems.map((item) => (
@@ -877,8 +875,7 @@ function PublicHomePage({
 
       <section className="conditions-section calm-reveal" aria-labelledby="conditions-title">
         <div className="section-intro">
-          <p className="eyebrow">Today&apos;s Market Conditions</p>
-          <h2 id="conditions-title">Market Conditions</h2>
+          <h2 id="conditions-title">Today&apos;s Market Conditions</h2>
         </div>
         <div className="condition-strip">
           {publicMarketConditions.map((item) => (
