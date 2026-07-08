@@ -172,8 +172,18 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Allow the local Next.js frontend to call this API during development.
-frontend_origins = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000")
+# Allow local Next.js frontend ports to call this API during development.
+default_frontend_origins = ",".join(
+    [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:3002",
+    ]
+)
+frontend_origins = os.getenv("FRONTEND_ORIGINS", default_frontend_origins)
 allowed_origins = [origin.strip() for origin in frontend_origins.split(",") if origin.strip()]
 
 app.add_middleware(
