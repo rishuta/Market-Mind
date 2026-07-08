@@ -398,45 +398,49 @@ const homePlanPlaceholders = ["Stocks", "SIPs", "Gold", "Cash Buffer"];
 
 // Placeholder public brief content until a live AI Daily Brief endpoint is available.
 const publicDailyBrief = {
-  conclusion: "Patience is likely to matter more than speed today.",
+  conclusion:
+    "Markets are not giving a strong signal this morning. Investors are waiting for clearer direction, so patience matters more than speed. Inflation pressure is easing, defensive areas remain steady, and quality opportunities are still selective.",
   mood: "Calm",
   moodLabel: "Mood",
-  reasons: [
-    "Investors are waiting for central bank guidance.",
-    "Inflation pressure continues to ease.",
-    "Defensive sectors remain steady.",
-  ],
+  preparedBy: "Prepared by MarketMind",
+  status: "Reviewed overnight markets, economic events, and sector movement.",
 };
 
 const publicWatchItems = [
   {
-    detail: "Rate language could set the tone for risk.",
-    title: "Central bank guidance",
+    detail: "Policy language may influence how much risk investors are willing to take today.",
+    icon: "bank",
+    title: "Central bank commentary",
   },
   {
-    detail: "Company guidance may show where strength is real.",
-    title: "Earnings quality",
+    detail: "Large-company guidance can show whether earnings strength is broadening or narrowing.",
+    icon: "bars",
+    title: "Earnings updates",
   },
   {
-    detail: "Currency moves can affect global exposure.",
-    title: "Currency moves",
+    detail: "Currency movement can affect international exposure and near-term portfolio comfort.",
+    icon: "coin",
+    title: "Currency conditions",
   },
 ];
 
 const publicMarketConditions = [
   {
+    icon: "weather",
     label: "Mood",
-    note: "Steady, with investors waiting for direction.",
+    note: "Markets look steady while investors wait for clearer signals.",
     value: "Calm",
   },
   {
+    icon: "shield",
     label: "Risk Environment",
-    note: "Careful positioning still makes sense.",
+    note: "Some caution still makes sense, especially for concentrated bets.",
     value: "Moderate",
   },
   {
+    icon: "target",
     label: "Opportunity Level",
-    note: "Quality matters more than speed.",
+    note: "Quality opportunities exist, but selectivity matters more than speed.",
     value: "Selective",
   },
 ];
@@ -814,52 +818,46 @@ function PublicHomePage({
   return (
     <main className="public-page">
       <header className="public-header">
-        <strong>MarketMind AI</strong>
-        <button className="secondary-cta" type="button" onClick={onSignIn}>
-          Sign In
-        </button>
+        <div className="public-brand">
+          <span className="public-logo-mark" aria-hidden="true" />
+          <strong>MarketMind AI</strong>
+        </div>
+        <div className="public-header-actions">
+          <button className="icon-cta" type="button" aria-label="Display settings">
+            <span className="settings-mark" aria-hidden="true" />
+          </button>
+          <button className="secondary-cta" type="button" onClick={onSignIn}>
+            Sign In
+          </button>
+        </div>
       </header>
 
-      <section className="public-hero calm-reveal" aria-labelledby="public-hero-title">
+      <section className="public-hero calm-reveal" aria-labelledby="brief-title">
         <div className="public-hero-copy">
-          <h1 id="public-hero-title">Good morning.</h1>
-          <p className="subtitle">
-            Here&apos;s today&apos;s market story before you make a money decision.
+          <p className="hero-greeting">Good morning.</p>
+          <h1 id="brief-title">Today&apos;s Brief</h1>
+          <p className="prepared-line">
+            <span className="spark-mark" aria-hidden="true" />
+            {publicDailyBrief.preparedBy}
           </p>
-        </div>
-      </section>
-
-      <section className="daily-brief-section calm-reveal" aria-labelledby="brief-title">
-        <h2 id="brief-title">Today&apos;s Brief</h2>
-        <div className="brief-scan">
-          <div className="brief-mood">
-            <span className="mood-label">{publicDailyBrief.moodLabel}</span>
-            <strong>
-              <span className="mood-signal" aria-hidden="true" />
-              {publicDailyBrief.mood}
-            </strong>
-          </div>
-          <div className="brief-message">
-            <p className="brief-conclusion">{publicDailyBrief.conclusion}</p>
-            <span className="brief-reasons-label">Why</span>
-            <ul className="brief-reasons" aria-label="Why MarketMind sees it this way">
-              {publicDailyBrief.reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-          </div>
+          <p className="brief-support">{publicDailyBrief.status}</p>
+          <p className="brief-conclusion">{publicDailyBrief.conclusion}</p>
         </div>
       </section>
 
       <section className="watch-section calm-reveal" aria-labelledby="watch-title">
         <div className="section-intro">
-          <h2 id="watch-title">Things Worth Watching Today</h2>
+          <p>Watch Today</p>
+          <h2 id="watch-title">What to keep on your radar</h2>
         </div>
         <div className="watch-list-simple">
           {publicWatchItems.map((item) => (
             <article key={item.title} className="watch-item">
-              <strong>{item.title}</strong>
-              <p>{item.detail}</p>
+              <span className={`brief-icon ${item.icon}`} aria-hidden="true" />
+              <div>
+                <strong>{item.title}</strong>
+                <p>{item.detail}</p>
+              </div>
             </article>
           ))}
         </div>
@@ -867,23 +865,35 @@ function PublicHomePage({
 
       <section className="conditions-section calm-reveal" aria-labelledby="conditions-title">
         <div className="section-intro">
-          <h2 id="conditions-title">Today&apos;s Market Conditions</h2>
+          <p>Today&apos;s Market Conditions</p>
+          <h2 id="conditions-title">Current investing environment</h2>
         </div>
         <div className="condition-strip">
           {publicMarketConditions.map((item) => (
             <article key={item.label} className="condition-item">
-              <span>{item.label}</span>
-              <strong>{item.value}</strong>
-              <p>{item.note}</p>
+              <span className={`brief-icon ${item.icon}`} aria-hidden="true" />
+              <div>
+                <span className="condition-label">
+                  {item.label}
+                  <i aria-hidden="true" />
+                </span>
+                <strong>{item.value}</strong>
+                <p>{item.note}</p>
+              </div>
             </article>
           ))}
         </div>
       </section>
 
       <section className="next-step-section calm-reveal" aria-label="Next step">
-        <p>Ready for personal advice?</p>
+        <span className="cta-spark" aria-hidden="true" />
+        <div>
+          <strong>Ready for personal advice?</strong>
+          <p>Build a plan that fits your goals, risk, and time horizon.</p>
+        </div>
         <button className="text-cta" type="button" onClick={onBuildPlan}>
           Build your plan in Invest
+          <span aria-hidden="true">→</span>
         </button>
       </section>
     </main>
