@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { briefing } from '@/lib/briefing'
 
 export function Hero() {
@@ -56,28 +58,51 @@ export function Hero() {
 
         {/* Primary actions */}
         <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
-          {primaryActions.map((action) =>
-            action.variant === 'filled' ? (
-              <button
-                key={action.title}
-                type="button"
-                className="inline-flex items-center rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-primary/90"
-              >
+          {primaryActions.map((action) => {
+            const href = 'href' in action ? action.href : undefined
+
+            if (action.variant === 'filled') {
+              const className =
+                'inline-flex items-center rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-primary/90'
+
+              return href ? (
+                <Link key={action.title} href={href} className={className}>
+                  {action.title}
+                </Link>
+              ) : (
+                <button key={action.title} type="button" className={className}>
+                  {action.title}
+                </button>
+              )
+            }
+
+            const content = (
+              <>
                 {action.title}
-              </button>
+                <span className="transition-transform duration-200 group-hover:translate-x-0.5">
+                  &rarr;
+                </span>
+              </>
+            )
+
+            return href ? (
+              <Link
+                key={action.title}
+                href={href}
+                className="group inline-flex items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
+              >
+                {content}
+              </Link>
             ) : (
               <button
                 key={action.title}
                 type="button"
                 className="group inline-flex items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
-                {action.title}
-                <span className="transition-transform duration-200 group-hover:translate-x-0.5">
-                  &rarr;
-                </span>
+                {content}
               </button>
-            ),
-          )}
+            )
+          })}
         </div>
       </div>
     </section>

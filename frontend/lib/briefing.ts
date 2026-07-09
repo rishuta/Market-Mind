@@ -13,7 +13,7 @@ export const briefing = {
   },
 
   primaryActions: [
-    { title: 'Build my investment plan', variant: 'filled' as const },
+    { title: 'Build my investment plan', variant: 'filled' as const, href: '/plan' },
     { title: 'Explain today’s market', variant: 'text' as const },
   ],
 
